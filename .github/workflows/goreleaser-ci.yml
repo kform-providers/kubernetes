@@ -1,0 +1,35 @@
+---
+name: goreleaser ci
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  build:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    outputs:
+      goreleaser: ${{ steps.filter.outputs.goreleaser }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+      - name: setup go
+        uses: actions/setup-go@v4.1.0
+        with:
+          go-version-file: go.mod
+      - name: run go releaser
+        uses: goreleaser/goreleaser-action@v5.0.0
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      - name: kformpackage-action
+        uses: kform-tools/kformpkg-action@main
+        with:
+          kformVersion: v0.0.1
+          targetPkgRegistryHostname: ghcr.io
