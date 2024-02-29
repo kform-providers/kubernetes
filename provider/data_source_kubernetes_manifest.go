@@ -32,7 +32,7 @@ func dataSourceKubernetesManifestRead(ctx context.Context, d *schema.ResourceDat
 		return nil, diag.FromErr(err)
 	}
 	nsn := types.NamespacedName{Namespace: u.GetNamespace(), Name: u.GetName()}
-	if d.GetScope() != kfplugin1.Scope_CLUSTER {
+	if d.GetScope() == kfplugin1.Scope_CLUSTER {
 		nsn = types.NamespacedName{Name: u.GetName()}
 	}
 	newu := &unstructured.Unstructured{}

@@ -13,15 +13,12 @@ import (
 	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
 	"github.com/kform-providers/kubernetes/provider/api/v1alpha1"
 	"github.com/kform-providers/kubernetes/provider/client/k8sclient"
-	"github.com/kform-providers/kubernetes/provider/client/pkgclient"
 	"github.com/mitchellh/go-homedir"
-
-	//apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-
 	apimachineryschema "k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func Provider() *schema.Provider {
@@ -61,6 +58,7 @@ func (k kubeClientsets) MainClientset() (*kubernetes.Clientset, error) {
 */
 
 func providerConfigure(ctx context.Context, d []byte, version string) (any, diag.Diagnostics) {
+
 	/*
 		b, err := yaml.Marshal(d)
 		if err != nil {
@@ -72,46 +70,59 @@ func providerConfigure(ctx context.Context, d []byte, version string) (any, diag
 		return nil, diag.FromErr(err)
 	}
 
-	if !providerConfig.Spec.IsKindValid() {
-		return nil, diag.Errorf("invalid provider kind, got: %s, expected: %v", providerConfig.Kind, v1alpha1.ExpectedProviderKinds)
-	}
-
-	if providerConfig.Spec.Kind == v1alpha1.ProviderKindPackage {
-		dir := "./out"
-		if providerConfig.Spec.Directory != nil {
-			dir = *providerConfig.Spec.Directory
-		}
-
-		c, err := pkgclient.New(pkgclient.Config{
-			Dir:               dir,
-			IgnoreAnnotations: []string{},
-			IgnoreLabels:      []string{},
-		})
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-		return c, diag.Diagnostics{}
-	}
-
-	cfg, err := initializeConfiguration(ctx, providerConfig)
-	if err != nil {
-		return nil, diag.FromErr(err)
-	}
-	if cfg == nil {
-		// IMPORTANT: if the supplied configuration is incomplete or invalid
-		///IMPORTANT: provider operations will fail or attempt to connect to localhost endpoints
-		cfg = &rest.Config{}
-	}
+	cfg := ctrl.GetConfigOrDie()
 	cfg.UserAgent = fmt.Sprintf("K8sForm/%s", version)
-
 	c, err := k8sclient.New(k8sclient.Config{
-		RESTCOnfig:        cfg,
+		RESTConfig:        cfg,
 		IgnoreAnnotations: []string{},
 		IgnoreLabels:      []string{},
 	})
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
+
+	/*
+		if !providerConfig.Spec.IsKindValid() {
+			return nil, diag.Errorf("invalid provider kind, got: %s, expected: %v", providerConfig.Kind, v1alpha1.ExpectedProviderKinds)
+		}
+
+		if providerConfig.Spec.Kind == v1alpha1.ProviderKindPackage {
+			dir := "./out"
+			if providerConfig.Spec.Directory != nil {
+				dir = *providerConfig.Spec.Directory
+			}
+
+			c, err := pkgclient.New(pkgclient.Config{
+				Dir:               dir,
+				IgnoreAnnotations: []string{},
+				IgnoreLabels:      []string{},
+			})
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+			return c, diag.Diagnostics{}
+		}
+
+		cfg, err := initializeConfiguration(ctx, providerConfig)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+		if cfg == nil {
+			// IMPORTANT: if the supplied configuration is incomplete or invalid
+			///IMPORTANT: provider operations will fail or attempt to connect to localhost endpoints
+			cfg = &rest.Config{}
+		}
+		cfg.UserAgent = fmt.Sprintf("K8sForm/%s", version)
+
+		c, err := k8sclient.New(k8sclient.Config{
+			RESTCOnfig:        cfg,
+			IgnoreAnnotations: []string{},
+			IgnoreLabels:      []string{},
+		})
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+	*/
 
 	return c, diag.Diagnostics{}
 }

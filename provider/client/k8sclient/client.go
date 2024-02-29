@@ -8,13 +8,13 @@ import (
 )
 
 type Config struct {
-	RESTCOnfig        *rest.Config
+	RESTConfig        *rest.Config
 	IgnoreAnnotations []string
 	IgnoreLabels      []string
 }
 
 func New(cfg Config) (provclient.Client, error) {
-	c, err := client.New(cfg.RESTCOnfig, client.Options{
+	c, err := client.New(cfg.RESTConfig, client.Options{
 		Scheme: runtime.NewScheme(),
 	})
 	if err != nil {
