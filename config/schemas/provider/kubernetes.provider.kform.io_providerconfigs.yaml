@@ -70,9 +70,6 @@ spec:
                 items:
                   type: string
                 type: array
-              directory:
-                maxLength: 64
-                type: string
               host:
                 description: The hostname (in form of URI) of Kubernetes master.
                 maxLength: 64
@@ -82,12 +79,6 @@ spec:
                 description: Insecure determines whether the server should be accessible
                   without verifying the TLS certificate
                 type: boolean
-              kind:
-                default: api
-                enum:
-                - api
-                - package
-                type: string
               password:
                 description: |-
                   The password to use for HTTP basic authentication when accessing the Kubernetes master endpoint.
@@ -116,8 +107,6 @@ spec:
                   accessing the Kubernetes master endpoint.
                 maxLength: 64
                 type: string
-            required:
-            - kind
             type: object
         type: object
     served: true
