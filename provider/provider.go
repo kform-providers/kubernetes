@@ -347,5 +347,3 @@ func (r *Client) Delete(ctx context.Context, obj *unstructured.Unstructured, opt
 	}
 	return nil
 }
-
-
