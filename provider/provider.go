@@ -38,23 +38,6 @@ func Provider() *kformschema.Provider {
 	return p
 }
 
-/*
-func (k kubeClientsets) MainClientset() (*kubernetes.Clientset, error) {
-	if k.mainClientset != nil {
-		return k.mainClientset, nil
-	}
-
-	if k.config != nil {
-		kc, err := kubernetes.NewForConfig(k.config)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to configure client: %s", err)
-		}
-		k.mainClientset = kc
-	}
-	return k.mainClientset, nil
-}
-*/
-
 func providerConfigure(ctx context.Context, d []byte, _ string) (any, diag.Diagnostics) {
 	log := log.FromContext(ctx)
 	providerConfig := &v1alpha1.ProviderConfig{}
@@ -365,16 +348,4 @@ func (r *Client) Delete(ctx context.Context, obj *unstructured.Unstructured, opt
 	return nil
 }
 
-/*
-// overlyCautiousIllegalFileCharacters matches characters that *might* not be supported.  Windows is really restrictive, so this is really restrictive
-var overlyCautiousIllegalFileCharacters = regexp.MustCompile(`[^(\w/.)]`)
 
-// computeDiscoverCacheDir takes the parentDir and the host and comes up with a "usually non-colliding" name.
-func computeDiscoverCacheDir(parentDir, host string) string {
-	// strip the optional scheme from host if its there:
-	schemelessHost := strings.Replace(strings.Replace(host, "https://", "", 1), "http://", "", 1)
-	// now do a simple collapse of non-AZ09 characters.  Collisions are possible but unlikely.  Even if we do collide the problem is short lived
-	safeHost := overlyCautiousIllegalFileCharacters.ReplaceAllString(schemelessHost, "_")
-	return filepath.Join(parentDir, safeHost)
-}
-*/
