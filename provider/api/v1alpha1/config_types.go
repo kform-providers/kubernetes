@@ -7,14 +7,6 @@ import (
 )
 
 type ProviderConfigSpec struct {
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Enum:=api;package
-	// +kubebuilder:default:=api
-	Kind ProviderKind `json:"kind" yaml:"kind"`
-
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MaxLength=64
-	Directory *string `json:"directory,omitempty" yaml:"directory,omitempty"`
 	// The hostname (in form of URI) of Kubernetes master.
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MaxLength=64

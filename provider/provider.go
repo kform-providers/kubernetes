@@ -1,36 +1,34 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
-	"os"
-	"path/filepath"
 
 	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/diag"
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
+	kformschema "github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
+	"github.com/henderiw/logger/log"
 	"github.com/kform-providers/kubernetes/provider/api/v1alpha1"
-	"github.com/kform-providers/kubernetes/provider/client/k8sclient"
-	"github.com/mitchellh/go-homedir"
-	apimachineryschema "k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	ctrl "sigs.k8s.io/controller-runtime"
+	"k8s.io/kubectl/pkg/cmd/util"
+	"sigs.k8s.io/cli-utils/pkg/flowcontrol"
 )
 
-func Provider() *schema.Provider {
-	p := &schema.Provider{
+func Provider() *kformschema.Provider {
+	p := &kformschema.Provider{
 		//Schema:         provSchema,
-		ResourceMap: map[string]*schema.Resource{
+		ResourceMap: map[string]*kformschema.Resource{
 			"kubernetes_manifest": resourceKubernetesManifest(),
 		},
-		DataSourcesMap: map[string]*schema.Resource{
+		DataSourcesMap: map[string]*kformschema.Resource{
 			"kubernetes_manifest": dataSourceKubernetesManifest(),
 		},
-		ListDataSourcesMap: map[string]*schema.Resource{
+		ListDataSourcesMap: map[string]*kformschema.Resource{
 			"kubernetes_manifest": dataSourcesKubernetesManifest(),
 		},
 	}
@@ -57,29 +55,61 @@ func (k kubeClientsets) MainClientset() (*kubernetes.Clientset, error) {
 }
 */
 
-func providerConfigure(ctx context.Context, d []byte, version string) (any, diag.Diagnostics) {
-
-	/*
-		b, err := yaml.Marshal(d)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-	*/
+func providerConfigure(ctx context.Context, d []byte, _ string) (any, diag.Diagnostics) {
+	log := log.FromContext(ctx)
 	providerConfig := &v1alpha1.ProviderConfig{}
 	if err := json.Unmarshal(d, providerConfig); err != nil {
 		return nil, diag.FromErr(err)
 	}
 
-	cfg := ctrl.GetConfigOrDie()
-	cfg.UserAgent = fmt.Sprintf("K8sForm/%s", version)
-	c, err := k8sclient.New(k8sclient.Config{
-		RESTConfig:        cfg,
-		IgnoreAnnotations: []string{},
-		IgnoreLabels:      []string{},
-	})
+	kubeConfigFlags := genericclioptions.NewConfigFlags(true).WithDeprecatedPasswordFlag()
+	if providerConfig.Spec.ConfigPath != nil {
+		kubeConfigFlags.KubeConfig = providerConfig.Spec.ConfigPath
+	}
+	matchVersionKubeConfigFlags := util.NewMatchVersionFlags(kubeConfigFlags)
+	f := util.NewFactory(matchVersionKubeConfigFlags)
+
+	restConfig, err := f.ToRESTConfig()
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
+	enabled, err := flowcontrol.IsEnabled(ctx, restConfig)
+	if err != nil {
+		return nil, diag.FromErr(fmt.Errorf("checking server-side throttling enablement: %w", err))
+	}
+	if enabled {
+		// WrapConfigFn will affect future Factory.ToRESTConfig() calls.
+		kubeConfigFlags.WrapConfigFn = func(cfg *rest.Config) *rest.Config {
+			cfg.QPS = -1
+			cfg.Burst = -1
+			return cfg
+		}
+	}
+
+	dc, err := f.DynamicClient()
+	if err != nil {
+		log.Error("cannot get dynamic client", "error", err.Error())
+		return nil, diag.FromErr(err)
+	}
+
+	mapper, err := f.ToRESTMapper()
+	if err != nil {
+		log.Error("cannot get mapper", "error", err.Error())
+		return nil, diag.FromErr(err)
+	}
+
+	/*
+		cfg := ctrl.GetConfigOrDie()
+		cfg.UserAgent = fmt.Sprintf("K8sForm/%s", version)
+		c, err := k8sclient.New(k8sclient.Config{
+			RESTConfig:        cfg,
+			IgnoreAnnotations: []string{},
+			IgnoreLabels:      []string{},
+		})
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+	*/
 
 	/*
 		if !providerConfig.Spec.IsKindValid() {
@@ -124,10 +154,16 @@ func providerConfigure(ctx context.Context, d []byte, version string) (any, diag
 		}
 	*/
 
-	return c, diag.Diagnostics{}
+	return &Client{
+		//f:               f,
+		dc:     dc,
+		mapper: mapper,
+		//discoveryClient: discoveryClient,
+	}, diag.Diagnostics{}
 }
 
-func initializeConfiguration(ctx context.Context, providerConfig *v1alpha1.ProviderConfig) (*rest.Config, error) {
+/*
+func initializeConfiguration(_ context.Context, providerConfig *v1alpha1.ProviderConfig) (*rest.Config, error) {
 	overrides := &clientcmd.ConfigOverrides{}
 	loader := &clientcmd.ClientConfigLoadingRules{}
 
@@ -221,19 +257,19 @@ func initializeConfiguration(ctx context.Context, providerConfig *v1alpha1.Provi
 		overrides.AuthInfo.Token = *providerConfig.Spec.Token
 	}
 
-	/*
-		if providerConfig.Spec.Exec != nil {
-			exec := &clientcmdapi.ExecConfig{
-				APIVersion: providerConfig.Spec.Exec.APIVersion,
-				Command:    providerConfig.Spec.Exec.Command,
-				Args:       providerConfig.Spec.Exec.Args,
-			}
-			for k, v := range providerConfig.Spec.Exec.Env {
-				exec.Env = append(exec.Env, clientcmdapi.ExecEnvVar{Name: k, Value: v})
-			}
-			overrides.AuthInfo.Exec = exec
-		}
-	*/
+
+	//	if providerConfig.Spec.Exec != nil {
+	//		exec := &clientcmdapi.ExecConfig{
+	//			APIVersion: providerConfig.Spec.Exec.APIVersion,
+	//			Command:    providerConfig.Spec.Exec.Command,
+	//			Args:       providerConfig.Spec.Exec.Args,
+	//		}
+	//		for k, v := range providerConfig.Spec.Exec.Env {
+	//			exec.Env = append(exec.Env, clientcmdapi.ExecEnvVar{Name: k, Value: v})
+	//		}
+	//		overrides.AuthInfo.Exec = exec
+	//	}
+
 
 	if providerConfig.Spec.ProxyURL != nil {
 		overrides.ClusterDefaults.ProxyURL = *providerConfig.Spec.ProxyURL
@@ -247,5 +283,98 @@ func initializeConfiguration(ctx context.Context, providerConfig *v1alpha1.Provi
 	}
 
 	return cfg, nil
-
 }
+*/
+
+type Client struct {
+	dc dynamic.Interface
+	//discoveryClient discovery.CachedDiscoveryInterface
+	mapper meta.RESTMapper
+}
+
+// getMapping returns the RESTMapping for the provided resource.
+func (r *Client) getMapping(obj *unstructured.Unstructured) (*meta.RESTMapping, error) {
+	return r.mapper.RESTMapping(obj.GroupVersionKind().GroupKind(), obj.GroupVersionKind().Version)
+}
+
+func (r *Client) Get(ctx context.Context, obj *unstructured.Unstructured, options metav1.GetOptions) (*unstructured.Unstructured, error) {
+	m, err := r.getMapping(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	var newObj *unstructured.Unstructured
+	if m.Scope == meta.RESTScopeNamespace {
+		newObj, err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Get(ctx, obj.GetName(), options)
+	} else {
+		newObj, err = r.dc.Resource(m.Resource).Get(ctx, obj.GetName(), options)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return newObj, nil
+}
+
+func (r *Client) Create(ctx context.Context, obj *unstructured.Unstructured, options metav1.CreateOptions) (*unstructured.Unstructured, error) {
+	m, err := r.getMapping(obj)
+	if err != nil {
+		return nil, err
+	}
+	var newObj *unstructured.Unstructured
+	if m.Scope == meta.RESTScopeNamespace {
+		newObj, err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Create(ctx, obj, options)
+	} else {
+		newObj, err = r.dc.Resource(m.Resource).Create(ctx, obj, options)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return newObj, nil
+}
+
+func (r *Client) Update(ctx context.Context, obj *unstructured.Unstructured, options metav1.UpdateOptions) (*unstructured.Unstructured, error) {
+	m, err := r.getMapping(obj)
+	if err != nil {
+		return nil, err
+	}
+	var newObj *unstructured.Unstructured
+	if m.Scope == meta.RESTScopeNamespace {
+		newObj, err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Update(ctx, obj, options)
+	} else {
+		newObj, err = r.dc.Resource(m.Resource).Update(ctx, obj, options)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return newObj, nil
+}
+
+func (r *Client) Delete(ctx context.Context, obj *unstructured.Unstructured, options metav1.DeleteOptions) error {
+	m, err := r.getMapping(obj)
+	if err != nil {
+		return err
+	}
+	if m.Scope == meta.RESTScopeNamespace {
+		err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Delete(ctx, obj.GetName(), options)
+	} else {
+		err = r.dc.Resource(m.Resource).Delete(ctx, obj.GetName(), options)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+// overlyCautiousIllegalFileCharacters matches characters that *might* not be supported.  Windows is really restrictive, so this is really restrictive
+var overlyCautiousIllegalFileCharacters = regexp.MustCompile(`[^(\w/.)]`)
+
+// computeDiscoverCacheDir takes the parentDir and the host and comes up with a "usually non-colliding" name.
+func computeDiscoverCacheDir(parentDir, host string) string {
+	// strip the optional scheme from host if its there:
+	schemelessHost := strings.Replace(strings.Replace(host, "https://", "", 1), "http://", "", 1)
+	// now do a simple collapse of non-AZ09 characters.  Collisions are possible but unlikely.  Even if we do collide the problem is short lived
+	safeHost := overlyCautiousIllegalFileCharacters.ReplaceAllString(schemelessHost, "_")
+	return filepath.Join(parentDir, safeHost)
+}
+*/
