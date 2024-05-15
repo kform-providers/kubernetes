@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"time"
 
-	//"github.com/henderiw-nephio/kform/kform-plugin/kfprotov1/kfplugin1"
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/diag"
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
 	"github.com/henderiw/logger/log"
+	"github.com/kform-dev/kform-sdk-go/pkg/diag"
+	"github.com/kform-dev/kform-sdk-go/pkg/schema"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

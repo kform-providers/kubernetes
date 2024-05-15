@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/diag"
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
-	"github.com/henderiw-nephio/kform/providers/provider-kubernetes/kubernetes/client"
 	"github.com/henderiw/logger/log"
+	"github.com/kform-dev/kform-sdk-go/pkg/diag"
+	"github.com/kform-dev/kform-sdk-go/pkg/schema"
+	"github.com/kform-providers/kubernetes/provider/client"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 

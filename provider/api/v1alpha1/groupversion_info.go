@@ -3,7 +3,7 @@
 package v1alpha1
 
 const (
-	Group      = "kubernetes.provider.kform.io"
+	Group      = "kubernetes.provider.kform.dev"
 	Version    = "v1alpha1"
 	APIVersion = Group + "/" + Version
 )

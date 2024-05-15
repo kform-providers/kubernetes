@@ -29,7 +29,7 @@ vet: ## Run go vet against code.
 
 .PHONY: all
 all: manifests fmt vet ## Build manager binary.
-	go build -o $(LOCALBIN)/kform-provider-kubernetes -v main.go
+	env GOOS=linux go build -o $(LOCALBIN)/kform-provider-kubernetes -v main.go
 
 ##@ Build Dependencies
 
@@ -41,7 +41,7 @@ $(LOCALBIN):
 ## Tool Binaries
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
-CONTROLLER_TOOLS_VERSION ?= v0.14.0
+CONTROLLER_TOOLS_VERSION ?= v0.15.0
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.

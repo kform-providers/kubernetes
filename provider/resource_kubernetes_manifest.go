@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/diag"
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
 	"github.com/henderiw/logger/log"
+	"github.com/kform-dev/kform-sdk-go/pkg/diag"
+	"github.com/kform-dev/kform-sdk-go/pkg/schema"
 	"github.com/kform-providers/kubernetes/provider/kstatus/status"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

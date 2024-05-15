@@ -3,10 +3,10 @@ package main
 import (
 	"log/slog"
 
-	"github.com/henderiw-nephio/kform/kform-plugin/kfprotov1"
-	"github.com/henderiw-nephio/kform/kform-plugin/kfprotov1/kfserver1"
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
 	"github.com/henderiw/logger/log"
+	"github.com/kform-dev/kform-plugin/kfprotov1"
+	"github.com/kform-dev/kform-plugin/kfprotov1/kfserver1"
+	"github.com/kform-dev/kform-sdk-go/pkg/schema"
 	"github.com/kform-providers/kubernetes/provider"
 )
 

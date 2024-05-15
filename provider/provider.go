@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/henderiw-nephio/kform/kform-sdk-go/pkg/diag"
-	kformschema "github.com/henderiw-nephio/kform/kform-sdk-go/pkg/schema"
 	"github.com/henderiw/logger/log"
+	"github.com/kform-dev/kform-sdk-go/pkg/diag"
+	kformschema "github.com/kform-dev/kform-sdk-go/pkg/schema"
 	"github.com/kform-providers/kubernetes/provider/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
