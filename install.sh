@@ -13,9 +13,8 @@
 : ${USE_PKG:="false"} # default --use-pkg flag value. will use package installation by default unless the default is changed to false
 : ${VERIFY_CHECKSUM:="false"}
 : ${BIN_INSTALL_DIR:="/usr/local/bin"}
-: ${REPO_NAME:="pkgserver-dev/pkgctl"}
+: ${REPO_NAME:="kform-providers/kubernetes"}
 : ${REPO_URL:="https://github.com/$REPO_NAME"}
-: ${PROJECT_URL:="https://pkgctl.pkgserver.dev"}
 : ${LATEST_URL:="https://api.github.com/repos/$REPO_NAME/releases/latest"}
 # detectArch discovers the architecture for this system.
 detectArch() {
