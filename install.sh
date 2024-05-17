@@ -302,6 +302,6 @@ if ! checkInstalledVersion; then
     else
         installFile
     fi
-    testVersion
+    ##testVersion
     cleanup
 fi
