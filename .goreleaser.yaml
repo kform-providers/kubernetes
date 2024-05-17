@@ -40,6 +40,7 @@ archives:
   name_template: >-
     {{ .ProjectName }}_{{ replace .Version "v" "" }}_{{ .Os }}_
     {{- if eq .Arch "arm64"}}aarch64
+    {{- if eq .Arch "amd64"}}x86_64
     {{- else }}{{ .Arch }}{{ end }}
   files:
   - none*
