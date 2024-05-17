@@ -7,8 +7,8 @@
 # The install script is based off of the Apache 2.0 script from Helm,
 # https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 
-: ${BINARY_NAME:="kform-provider-kubernetes"}
-: ${PROJECT_NAME:="kform-provider-kubernetes"} # if project name does not match binary name
+: ${BINARY_NAME:="kubernetes"}
+: ${PROJECT_NAME:="kubernetes"} # if project name does not match binary name
 : ${USE_SUDO:="true"}
 : ${USE_PKG:="false"} # default --use-pkg flag value. will use package installation by default unless the default is changed to false
 : ${VERIFY_CHECKSUM:="false"}
