@@ -190,7 +190,8 @@ installFile() {
     echo "Preparing to install $BINARY_NAME ${TAG_WO_VER} into ${BIN_INSTALL_DIR}"
     runAsRoot cp -f "$TMP_ROOT/$BINARY_NAME" "$BIN_INSTALL_DIR/$BINARY_NAME"
     runAsRoot chmod 755 "$BIN_INSTALL_DIR/$BINARY_NAME"
-    echo "$BINARY_NAME installed into $BIN_INSTALL_DIR/$BINARY_NAME"
+    runAsRoot mv "$BIN_INSTALL_DIR/$BINARY_NAME" "$BIN_INSTALL_DIR/kform-provider-$BINARY_NAME"
+    echo "kform-provider-$BINARY_NAME installed into $BIN_INSTALL_DIR/kform-provider-$BINARY_NAME"
 }
 
 # installPkg installs the downloaded version of a package in a deb or rpm format
