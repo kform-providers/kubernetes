@@ -29,7 +29,7 @@ jobs:
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
       - name: kformpackage-action
-        uses: kform-tools/kformpkg-action@v0.0.2
+        uses: kform-tools/kformpkg-action@main
         with:
           kformpkgVersion: v0.0.1
           targetPkgRegistryHostname: ghcr.io
