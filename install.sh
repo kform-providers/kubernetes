@@ -7,14 +7,15 @@
 # The install script is based off of the Apache 2.0 script from Helm,
 # https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 
-: ${BINARY_NAME:="kubernetes"}
-: ${PROJECT_NAME:="kubernetes"} # if project name does not match binary name
+: ${BINARY_NAME:="kform-provider-kubernetes"}
+: ${PROJECT_NAME:="kform-provider-kubernetes"} # if project name does not match binary name
 : ${USE_SUDO:="true"}
 : ${USE_PKG:="false"} # default --use-pkg flag value. will use package installation by default unless the default is changed to false
 : ${VERIFY_CHECKSUM:="false"}
 : ${BIN_INSTALL_DIR:="/usr/local/bin"}
 : ${REPO_NAME:="kform-providers/kubernetes"}
 : ${REPO_URL:="https://github.com/$REPO_NAME"}
+: ${PROJECT_URL:="https://docs.kform.dev"}
 : ${LATEST_URL:="https://api.github.com/repos/$REPO_NAME/releases/latest"}
 # detectArch discovers the architecture for this system.
 detectArch() {
@@ -190,8 +191,7 @@ installFile() {
     echo "Preparing to install $BINARY_NAME ${TAG_WO_VER} into ${BIN_INSTALL_DIR}"
     runAsRoot cp -f "$TMP_ROOT/$BINARY_NAME" "$BIN_INSTALL_DIR/$BINARY_NAME"
     runAsRoot chmod 755 "$BIN_INSTALL_DIR/$BINARY_NAME"
-    runAsRoot mv "$BIN_INSTALL_DIR/$BINARY_NAME" "$BIN_INSTALL_DIR/kform-provider-$BINARY_NAME"
-    echo "kform-provider-$BINARY_NAME installed into $BIN_INSTALL_DIR/kform-provider-$BINARY_NAME"
+    echo "$BINARY_NAME installed into $BIN_INSTALL_DIR/$BINARY_NAME"
 }
 
 # installPkg installs the downloaded version of a package in a deb or rpm format
@@ -303,6 +303,6 @@ if ! checkInstalledVersion; then
     else
         installFile
     fi
-    ##testVersion
+    testVersion
     cleanup
 fi
