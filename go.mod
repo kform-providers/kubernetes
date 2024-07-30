@@ -2,20 +2,6 @@ module github.com/kform-providers/kubernetes
 
 go 1.22.2
 
-//replace k8s.io/kubectl => k8s.io/kubectl v0.28.6
-
-//replace k8s.io/client-go => k8s.io/client-go v0.28.6
-
-//replace k8s.io/api => k8s.io/api v0.28.6
-
-//replace k8s.io/apimachinery => k8s.io/apimachinery v0.28.6
-
-//replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.16.2
-
-//replace k8s.io/utils => k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-
-//replace github.com/henderiw-nephio/kform => github.com/henderiw-nephio/kform v0.0.2-0.20240402053059-8587b5b6db19
-
 require (
 	github.com/henderiw/logger v0.0.0-20230911123436-8655829b1abe
 	github.com/kform-dev/kform-plugin v0.0.0-20240512102710-e5ebed866b1d
