@@ -60,6 +60,8 @@ func resourceKubernetesManifestCreate(ctx context.Context, obj *schema.ResourceO
 		return nil, diag.FromErr(err)
 	}
 
+	fmt.Println("unstructured", u)
+
 	var dryRun []string
 	if obj.IsDryRun() {
 		dryRun = []string{"All"}
@@ -192,7 +194,7 @@ func getStatusWithRetries(ctx context.Context, client *Client, u *unstructured.U
 	var err error
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		// get the resource
-		newObj, cont, err := getStatus(ctx, client, u, delete)
+		newObj, cont, err := getStatus(ctx, client, u, delete, attempt)
 		if !cont {
 			return newObj, err
 		}
@@ -217,7 +219,7 @@ func getStatusWithRetries(ctx context.Context, client *Client, u *unstructured.U
 
 // getStatus gets the status of the object and returns the object if found, a boolean indicating continue true/false
 // and an error code
-func getStatus(ctx context.Context, client *Client, u *unstructured.Unstructured, delete bool) (*unstructured.Unstructured, bool, error) {
+func getStatus(ctx context.Context, client *Client, u *unstructured.Unstructured, delete bool, attempt int) (*unstructured.Unstructured, bool, error) {
 	log := log.FromContext(ctx)
 	newObj, err := client.Get(ctx, u, metav1.GetOptions{})
 	if err != nil {
@@ -243,6 +245,12 @@ func getStatus(ctx context.Context, client *Client, u *unstructured.Unstructured
 			log.Error(err.Error())
 			return newObj, false, err
 		}
+		return newObj, true, nil
+	}
+	if result.Reason == status.ReasonNoStatusInfo && attempt < maxRetries-2 {
+		// continue since we expect status by default - we assume status field will
+		// come, so hence we retry maxRetries -2 (which is 4 times), the 5th time we 
+		// just report ok as we did not get status for some time.
 		return newObj, true, nil
 	}
 	// success (update/create)

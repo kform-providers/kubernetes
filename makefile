@@ -29,7 +29,7 @@ vet: ## Run go vet against code.
 
 .PHONY: all
 all: manifests fmt vet ## Build manager binary.
-	env GOOS=linux go build -o $(LOCALBIN)/kform-provider-kubernetes -v main.go
+	env GOOS=darwin go build -o $(LOCALBIN)/kform-provider-kubernetes -v main.go
 
 ##@ Build Dependencies
 
