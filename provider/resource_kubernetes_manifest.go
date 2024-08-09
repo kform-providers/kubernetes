@@ -60,8 +60,6 @@ func resourceKubernetesManifestCreate(ctx context.Context, obj *schema.ResourceO
 		return nil, diag.FromErr(err)
 	}
 
-	fmt.Println("unstructured", u)
-
 	var dryRun []string
 	if obj.IsDryRun() {
 		dryRun = []string{"All"}
