@@ -288,6 +288,9 @@ func (r *Client) Get(ctx context.Context, obj *unstructured.Unstructured, option
 
 	var newObj *unstructured.Unstructured
 	if m.Scope == meta.RESTScopeNamespace {
+		if obj.GetNamespace() == "" {
+			return nil, fmt.Errorf("expected namespace, got %s", obj.GetNamespace())
+		}
 		newObj, err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Get(ctx, obj.GetName(), options)
 	} else {
 		newObj, err = r.dc.Resource(m.Resource).Get(ctx, obj.GetName(), options)
@@ -305,6 +308,9 @@ func (r *Client) Create(ctx context.Context, obj *unstructured.Unstructured, opt
 	}
 	var newObj *unstructured.Unstructured
 	if m.Scope == meta.RESTScopeNamespace {
+		if obj.GetNamespace() == "" {
+			return nil, fmt.Errorf("expected namespace, got %s", obj.GetNamespace())
+		}
 		newObj, err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Create(ctx, obj, options)
 	} else {
 		newObj, err = r.dc.Resource(m.Resource).Create(ctx, obj, options)
@@ -322,6 +328,9 @@ func (r *Client) Update(ctx context.Context, obj *unstructured.Unstructured, opt
 	}
 	var newObj *unstructured.Unstructured
 	if m.Scope == meta.RESTScopeNamespace {
+		if obj.GetNamespace() == "" {
+			return nil, fmt.Errorf("expected namespace, got %s", obj.GetNamespace())
+		}
 		newObj, err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Update(ctx, obj, options)
 	} else {
 		newObj, err = r.dc.Resource(m.Resource).Update(ctx, obj, options)
@@ -338,6 +347,9 @@ func (r *Client) Delete(ctx context.Context, obj *unstructured.Unstructured, opt
 		return err
 	}
 	if m.Scope == meta.RESTScopeNamespace {
+		if obj.GetNamespace() == "" {
+			return fmt.Errorf("expected namespace, got %s", obj.GetNamespace())
+		}
 		err = r.dc.Resource(m.Resource).Namespace(obj.GetNamespace()).Delete(ctx, obj.GetName(), options)
 	} else {
 		err = r.dc.Resource(m.Resource).Delete(ctx, obj.GetName(), options)
