@@ -7,7 +7,7 @@ require (
 	github.com/kform-dev/kform-plugin v0.0.0-20240512102710-e5ebed866b1d
 	github.com/kform-dev/kform-sdk-go v0.0.0-20240512103435-0eb335662706
 	github.com/stretchr/testify v1.9.0
-	k8s.io/apimachinery v0.30.2
+	k8s.io/apimachinery v0.30.3
 	k8s.io/cli-runtime v0.30.2
 	k8s.io/client-go v0.30.2
 	k8s.io/kubectl v0.30.1
