@@ -247,7 +247,7 @@ func getStatus(ctx context.Context, client *Client, u *unstructured.Unstructured
 	}
 	if result.Reason == status.ReasonNoStatusInfo && attempt < maxRetries-2 {
 		// continue since we expect status by default - we assume status field will
-		// come, so hence we retry maxRetries -2 (which is 4 times), the 5th time we 
+		// come, so hence we retry maxRetries -2 (which is 4 times), the 5th time we
 		// just report ok as we did not get status for some time.
 		return newObj, true, nil
 	}
